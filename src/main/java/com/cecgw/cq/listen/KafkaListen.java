@@ -19,9 +19,11 @@ import org.springframework.stereotype.Component;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
@@ -63,7 +65,8 @@ public class KafkaListen {
                 boolean startFlag = lineSpeedConfs.stream().anyMatch(e->e.getStart_ip().equals(rfidAnalyze.getReaderip()));
                 boolean endFlag = lineSpeedConfs.stream().anyMatch(e->e.getEnd_ip().equals(rfidAnalyze.getReaderip()));
                 if (originFlag){
-                    jedisUtil.listAdd("origin_rifd", JSON.toJSONString(rfidAnalyze));
+                    String groupDate = new SimpleDateFormat("yyyy-mm-dd").format(new Date());
+                    jedisUtil.listAdd("origin_rifd"+groupDate, JSON.toJSONString(rfidAnalyze));
                 }
                 if (startFlag){
                     jedisUtil.listAdd("startRfid",JSON.toJSONString(rfidAnalyze));
