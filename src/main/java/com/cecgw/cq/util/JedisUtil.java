@@ -784,7 +784,7 @@ public class JedisUtil {
      */
     public  void returnBrokenResource(Jedis jedis) {
         if (jedis != null) {
-            this.jedisPool.returnBrokenResource(jedis);
+            jedis.close();
         }
     }
 
@@ -794,7 +794,7 @@ public class JedisUtil {
      * @param isBroken
      */
     public  void returnResource(Jedis jedis) {
-//            jedisPool.close();
+            jedis.close();
     }
 
     /**
