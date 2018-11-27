@@ -5,21 +5,19 @@ import com.alibaba.fastjson.JSONArray;
 import com.cecgw.cq.entity.LINE_SPEED_CONF;
 import com.cecgw.cq.entity.RFID_ANALYZE;
 
+import com.cecgw.cq.entity.RFID_ANALYZE_DAY;
 import com.cecgw.cq.entity.RfidMsg;
 
+import com.cecgw.cq.repository.RfidAnalyseDayRep;
+import com.cecgw.cq.repository.RfidAnalyseRep;
 import com.cecgw.cq.util.JedisUtil;
+import com.cecgw.cq.util.TimeUtil;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
-import org.apache.kafka.common.TopicPartition;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
-import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
-import org.springframework.kafka.listener.AbstractMessageListenerContainer;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
 import redis.clients.jedis.Jedis;
@@ -32,7 +30,6 @@ import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.logging.Logger;
 
 /**
  * @author denghualin
@@ -44,9 +41,16 @@ public class KafkaListen {
     private org.slf4j.Logger logger = LoggerFactory.getLogger(KafkaListen.class);
     @Autowired
     JedisUtil jedisUtil;
+    private final static String TOPIC = "test277";
+    @Autowired
+    RfidAnalyseRep rfidAnalyseRep;
+    @Autowired
+    RfidAnalyseDayRep rfidAnalyseDayRep;
+    String groupDate = new SimpleDateFormat("yyyy-MM-dd hh").format(new Date());
 
-    @KafkaListener(topics = "test277",containerFactory = "ackContainerFactory")
-    public void listen(ConsumerRecord<?, ?> record, Acknowledgment ack, Consumer consumer) {
+    @KafkaListener(topics = TOPIC,containerFactory = "ackContainerFactory")
+    public void listen(ConsumerRecord<?, ?> record, Acknowledgment ack) {
+
         try {
             List<String> conf = jedisUtil.getList("speedConf");
             List<String> ipConf = jedisUtil.getList("ipConf");
@@ -58,7 +62,7 @@ public class KafkaListen {
                 rfidAnalyze.setId(rfidMsg.getId());
                 rfidAnalyze.setC1(rfidMsg.getCONTENT1());
                 rfidAnalyze.setC2(rfidMsg.getCONTENT2());
-                rfidAnalyze.setTime(rfidMsg.getTIME().toString());
+                rfidAnalyze.setTime(new Date(rfidMsg.getCOLLECT_TIME()));
                 rfidAnalyze.setReaderip(rfidMsg.getREADERIP());
                 rfidAnalyze.setColor(rfidMsg.getPlateColor());
                 rfidAnalyze.setEid(rfidMsg.getEID());
@@ -71,7 +75,6 @@ public class KafkaListen {
                 boolean startFlag = lineSpeedConfs.stream().anyMatch(e->e.getStart_ip().equals(rfidAnalyze.getReaderip()));
                 boolean endFlag = lineSpeedConfs.stream().anyMatch(e->e.getEnd_ip().equals(rfidAnalyze.getReaderip()));
                 if (originFlag){
-                    String groupDate = new SimpleDateFormat("yyyy-MM-dd hh").format(new Date());
                     jedisUtil.listAdd("origin_rifd"+groupDate, JSON.toJSONString(rfidAnalyze));
                 }
                 if (startFlag){
@@ -80,15 +83,16 @@ public class KafkaListen {
                 if (endFlag){
                     jedisUtil.listAdd("endRfid",JSON.toJSONString(rfidAnalyze));
                 }
+                rfidAnalyseRep.save(rfidAnalyze);
+                rfidAnalyseDayRep.save(changeObj(rfidAnalyze,String.valueOf(rfidMsg.getCOLLECT_TIME())));
             }
+        }catch (Exception e){
+            logger.error("rfid取数异常:"+e.getMessage());
+            jedisUtil.listAdd(TOPIC+"_"+groupDate,record.value().toString());
+//            consumer.seek(new TopicPartition("test277",record.partition()),record.offset());
+        }finally {
             ack.acknowledge();
-
-        }catch (RuntimeException e){
-            logger.debug("取数异常:"+e.getMessage());
-            consumer.seek(new TopicPartition("test277",record.partition()),record.offset());
         }
-
-
     }
 
     public static int createId(Long id){
@@ -98,6 +102,22 @@ public class KafkaListen {
        buffer.append(prefix);
        buffer.append(timeswap.substring(0,timeswap.length()-5));
        return Integer.valueOf(buffer.toString());
+    }
+
+    private RFID_ANALYZE_DAY changeObj(RFID_ANALYZE rfidAnalyze,String time){
+        RFID_ANALYZE_DAY rfidAnalyzeDay = new RFID_ANALYZE_DAY();
+        rfidAnalyzeDay.setId(rfidAnalyze.getId());
+        rfidAnalyzeDay.setC1(rfidAnalyze.getC1());
+        rfidAnalyzeDay.setC2(rfidAnalyze.getC2());
+        rfidAnalyzeDay.setTime(time);
+        rfidAnalyzeDay.setReaderip(rfidAnalyze.getReaderip());
+        rfidAnalyzeDay.setColor(rfidAnalyze.getColor());
+        rfidAnalyzeDay.setEid(rfidAnalyze.getEid());
+        rfidAnalyzeDay.setLocalization(rfidAnalyze.getLocalization());
+        rfidAnalyzeDay.setNature(rfidAnalyze.getNature());
+        rfidAnalyzeDay.setPlate(rfidAnalyze.getPlate());
+        rfidAnalyzeDay.setVehicle(rfidAnalyze.getVehicle());
+        return  rfidAnalyzeDay;
     }
 
 

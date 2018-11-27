@@ -139,9 +139,7 @@ public class JedisUtil {
                 value = jedis.lrange(key, 0, -1);
                 logger.debug("getList {} = {}", key, value);
             }
-        } catch (Exception e) {
-            logger.warn("getList {} = {}", key, value, e);
-        } finally {
+        }finally {
             returnResource(jedis);
         }
         return value;
@@ -785,6 +783,18 @@ public class JedisUtil {
     public  void returnBrokenResource(Jedis jedis) {
         if (jedis != null) {
             jedis.close();
+        }
+    }
+
+    public void delListVal(String key,String val){
+
+        Jedis jedis = this.getResource();
+        try {
+            if (jedis.exists(key)){
+                jedis.lrem(key, 0, com.cecgw.cq.util.StringUtils.repChat(val));
+            }
+        }catch (RuntimeException e){
+            logger.error(e.getMessage());
         }
     }
 

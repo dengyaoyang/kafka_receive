@@ -32,9 +32,7 @@ public class RedisConf extends CachingConfigurerSupport {
     @Bean
     public JedisPool redisPoolFactory() {
         JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
-
         JedisPool jedisPool = new JedisPool(jedisPoolConfig, host, port, timeout, password);
-
         return jedisPool;
     }
 }
