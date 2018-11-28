@@ -58,7 +58,6 @@ public class CaptureLinsten {
 
     private Capture changeCapObj(CaptureBo captureBo){
         Capture capture = new Capture();
-        capture.setID(captureBo.getId());
         capture.setFX(captureBo.getLaneDir());
         capture.setPass_time(String.valueOf(captureBo.getPassTime()));
         capture.setPic1_name(captureBo.getPic1Name());

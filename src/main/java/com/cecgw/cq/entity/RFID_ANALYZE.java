@@ -2,8 +2,11 @@ package com.cecgw.cq.entity;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.GeneratorType;
+import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.util.Date;
@@ -18,8 +21,10 @@ import java.util.Date;
 @Data
 @NoArgsConstructor
 public class RFID_ANALYZE {
-	@Id
-	private Long id;
+    @Id
+    @GeneratedValue(generator = "timeID")
+    @GenericGenerator(name = "timeID",strategy = "com.cecgw.cq.util.IdGen")
+    private Long id;
 
 	/**
 	 * <tt>id</tt>属性的Getter方法.

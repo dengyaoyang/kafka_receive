@@ -11,7 +11,6 @@ import com.cecgw.cq.entity.RfidMsg;
 import com.cecgw.cq.repository.RfidAnalyseDayRep;
 import com.cecgw.cq.repository.RfidAnalyseRep;
 import com.cecgw.cq.util.JedisUtil;
-import com.cecgw.cq.util.TimeUtil;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
@@ -59,7 +58,6 @@ public class KafkaListen {
                 //过滤kafka无效数据
                 RfidMsg rfidMsg = JSON.parseObject(kafkaMessage.get().toString(),RfidMsg.class);
                 RFID_ANALYZE rfidAnalyze = new RFID_ANALYZE();
-                rfidAnalyze.setId(rfidMsg.getId());
                 rfidAnalyze.setC1(rfidMsg.getCONTENT1());
                 rfidAnalyze.setC2(rfidMsg.getCONTENT2());
                 rfidAnalyze.setTime(new Date(rfidMsg.getCOLLECT_TIME()));

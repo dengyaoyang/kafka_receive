@@ -2,8 +2,10 @@ package com.cecgw.cq.entity;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
@@ -18,6 +20,8 @@ import javax.persistence.Table;
 @NoArgsConstructor
 public class RFID_ANALYZE_DAY {
     @Id
+    @GeneratedValue(generator = "timeID")
+    @GenericGenerator(name = "timeID", strategy = "com.cecgw.cq.util.IdGen")
     private long id;
     private String time;
     private String readerip;
