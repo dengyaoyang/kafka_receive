@@ -11,6 +11,8 @@ import com.cecgw.cq.entity.RfidMsg;
 import com.cecgw.cq.repository.RfidAnalyseDayRep;
 import com.cecgw.cq.repository.RfidAnalyseRep;
 import com.cecgw.cq.util.JedisUtil;
+import com.cecgw.cq.util.TimeUtil;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
@@ -64,7 +66,9 @@ public class KafkaListen {
                 rfidAnalyze.setReaderip(rfidMsg.getREADERIP());
                 rfidAnalyze.setColor(rfidMsg.getPlateColor());
                 rfidAnalyze.setEid(rfidMsg.getEID());
-                rfidAnalyze.setLocalization(rfidMsg.getLOCATION());
+                if (StringUtils.isNotBlank(rfidMsg.getCONTENT1())) {
+                    rfidAnalyze.setLocalization(rfidMsg.getCONTENT1().substring(1,2));
+                }
                 rfidAnalyze.setNature(rfidMsg.getVEHICLE_USER_TYPE());
                 rfidAnalyze.setPlate(rfidMsg.getPLATE_TYPE());
                 rfidAnalyze.setVehicle(rfidMsg.getVEHICLE_TYPE());
@@ -82,7 +86,7 @@ public class KafkaListen {
                     jedisUtil.listAdd("endRfid",JSON.toJSONString(rfidAnalyze));
                 }
                 rfidAnalyseRep.save(rfidAnalyze);
-                rfidAnalyseDayRep.save(changeObj(rfidAnalyze,String.valueOf(rfidMsg.getCOLLECT_TIME())));
+                rfidAnalyseDayRep.save(changeObj(rfidAnalyze, TimeUtil.getTime(new Date(rfidMsg.getCOLLECT_TIME()),TimeUtil.FULL_CODE)));
             }
         }catch (Exception e){
             logger.error("rfid取数异常:"+e.getMessage());
