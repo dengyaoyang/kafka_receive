@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -34,12 +35,17 @@ public class CaptureLinsten {
     @KafkaListener(topics = TOPIC, containerFactory = "ackContainerFactory")
     public void capListen(ConsumerRecord<?, ?> record, Acknowledgment ack){
         Optional<?> optional = Optional.ofNullable(record.value());
+        List<String> codes = jedisUtil.getList("tollgateCode");
         try {
             if (optional.isPresent()){
                 String capJson = optional.get().toString();
                 CaptureBo captureBo = JSON.parseObject(capJson,CaptureBo.class);
                 Capture capture = changeCapObj(captureBo);
-                captureRep.save(capture);
+                //如果跟配置中的数据匹配就SAVE
+                boolean flag = codes.stream().anyMatch(n->n.equals(capture.getTollgate_code()));
+                if (flag){
+                    captureRep.save(capture);
+                }
             }
         }catch (RuntimeException e){
             logger.error("cap取数异常:"+e.getMessage());
