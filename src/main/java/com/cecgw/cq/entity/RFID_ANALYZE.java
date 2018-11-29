@@ -2,7 +2,6 @@ package com.cecgw.cq.entity;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.GeneratorType;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.Entity;
@@ -25,25 +24,6 @@ public class RFID_ANALYZE {
     @GeneratedValue(generator = "timeID")
     @GenericGenerator(name = "timeID",strategy = "com.cecgw.cq.util.IdGen")
     private Long id;
-
-	/**
-	 * <tt>id</tt>属性的Getter方法.
-	 *
-	 * @return id
-	 */
-	public Long getId() {
-		return id;
-	}
-
-	/**
-	 * <tt>id</tt> 的Setter方法.
-	 *
-	 * @param id 成员变量的值被设置成 id
-	 */
-	public void setId(Long id) {
-		this.id = id;
-	}
-
 	private Date time;
 	private String readerip;
 	private String c1;

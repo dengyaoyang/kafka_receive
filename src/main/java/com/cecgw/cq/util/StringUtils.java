@@ -1,5 +1,8 @@
 package com.cecgw.cq.util;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author denghualin
  * @version V1.0

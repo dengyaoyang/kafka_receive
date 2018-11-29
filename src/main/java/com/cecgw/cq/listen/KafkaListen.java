@@ -2,6 +2,8 @@ package com.cecgw.cq.listen;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
+import com.cecgw.cq.entity.Capture;
+import com.cecgw.cq.entity.EpcDict;
 import com.cecgw.cq.entity.LINE_SPEED_CONF;
 import com.cecgw.cq.entity.RFID_ANALYZE;
 
@@ -43,11 +45,15 @@ public class KafkaListen {
     @Autowired
     JedisUtil jedisUtil;
     private final static String TOPIC = "test277";
+    private final static String VEHICLE = "VEHICLE";
+    private final static String NATURE = "NATURE";
+    private final static String PLATE = "PLATE";
     @Autowired
     RfidAnalyseRep rfidAnalyseRep;
     @Autowired
     RfidAnalyseDayRep rfidAnalyseDayRep;
     String groupDate = new SimpleDateFormat("yyyy-MM-dd hh").format(new Date());
+
 
     @KafkaListener(topics = TOPIC,containerFactory = "ackContainerFactory")
     public void listen(ConsumerRecord<?, ?> record, Acknowledgment ack) {
@@ -69,15 +75,15 @@ public class KafkaListen {
                 if (StringUtils.isNotBlank(rfidMsg.getCONTENT1())) {
                     rfidAnalyze.setLocalization(rfidMsg.getCONTENT1().substring(1,2));
                 }
-                rfidAnalyze.setNature(rfidMsg.getVEHICLE_USER_TYPE());
-                rfidAnalyze.setPlate(rfidMsg.getPLATE_TYPE());
-                rfidAnalyze.setVehicle(rfidMsg.getVEHICLE_TYPE());
+                giveVal(rfidAnalyze,rfidMsg);
                 List<LINE_SPEED_CONF> lineSpeedConfs = JSONArray.parseArray(conf.toString(),LINE_SPEED_CONF.class);;
                 boolean originFlag = ipConf.stream().anyMatch(e->e.equals(rfidAnalyze.getReaderip()));
                 boolean startFlag = lineSpeedConfs.stream().anyMatch(e->e.getStart_ip().equals(rfidAnalyze.getReaderip()));
                 boolean endFlag = lineSpeedConfs.stream().anyMatch(e->e.getEnd_ip().equals(rfidAnalyze.getReaderip()));
                 if (originFlag){
                     jedisUtil.listAdd("origin_rifd"+groupDate, JSON.toJSONString(rfidAnalyze));
+                    rfidAnalyseRep.save(rfidAnalyze);
+                    rfidAnalyseDayRep.save(changeObj(rfidAnalyze, TimeUtil.getTime(new Date(rfidMsg.getCOLLECT_TIME()),TimeUtil.FULL_CODE)));
                 }
                 if (startFlag){
                     jedisUtil.listAdd("startRfid",JSON.toJSONString(rfidAnalyze));
@@ -85,8 +91,7 @@ public class KafkaListen {
                 if (endFlag){
                     jedisUtil.listAdd("endRfid",JSON.toJSONString(rfidAnalyze));
                 }
-                rfidAnalyseRep.save(rfidAnalyze);
-                rfidAnalyseDayRep.save(changeObj(rfidAnalyze, TimeUtil.getTime(new Date(rfidMsg.getCOLLECT_TIME()),TimeUtil.FULL_CODE)));
+
             }
         }catch (Exception e){
             logger.error("rfid取数异常:"+e.getMessage());
@@ -96,6 +101,35 @@ public class KafkaListen {
             ack.acknowledge();
         }
     }
+
+    /**
+     * 判断并且对RFID_ANALYZ的某些字段赋值
+     * @param rfidAnalyze
+     * @param rfidMsg
+     */
+    public void giveVal(RFID_ANALYZE rfidAnalyze,RfidMsg rfidMsg){
+        List<String> dict = jedisUtil.getList("t_epc_dict");
+        List<EpcDict> epcJ = JSONArray.parseArray(dict.toString(),EpcDict.class);
+        for (EpcDict epcDict:epcJ){
+            if (epcDict.getType().equals(NATURE)){
+                if (epcDict.getSub_type().equals(String.valueOf(rfidMsg.getEpcNatureCode()))){
+                    rfidAnalyze.setNature(epcDict.getCode());
+                }
+            }
+            if (epcDict.getType().equals(VEHICLE)){
+                if (epcDict.getSub_type().equals(String.valueOf(rfidMsg.getEpcVehicleCode()))){
+                    rfidAnalyze.setVehicle(epcDict.getCode());
+                }
+            }
+            if (epcDict.getType().equals(PLATE)){
+                if (epcDict.getSub_type().equals(String.valueOf(rfidMsg.getEpcPlateCode()))){
+                    rfidAnalyze.setPlate(epcDict.getCode());
+                }
+            }
+        }
+    }
+
+
 
     public static int createId(Long id){
        String prefix =  String.valueOf(id).substring(0,5);
@@ -136,6 +170,8 @@ public class KafkaListen {
 //        List<LINE_SPEED_CONF> lineSpeedConf1 = JSONArray.parseArray(conf.toString(),LINE_SPEED_CONF.class);
 //        System.out.println(lineSpeedConf1.size());
     }
+
+
 
 
 }
