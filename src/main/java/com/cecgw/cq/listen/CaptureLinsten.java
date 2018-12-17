@@ -32,7 +32,7 @@ public class CaptureLinsten {
     String groupDate = new SimpleDateFormat("yyyy-MM-dd hh").format(new Date());
 
     private static final String TOPIC = "cap277";
-    @KafkaListener(topics = TOPIC, containerFactory = "ackContainerFactory")
+//    @KafkaListener(topics = TOPIC, containerFactory = "ackContainerFactory")
     public void capListen(ConsumerRecord<?, ?> record, Acknowledgment ack){
         Optional<?> optional = Optional.ofNullable(record.value());
         List<String> codes = jedisUtil.getList("tollgateCode");

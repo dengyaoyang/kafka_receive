@@ -55,7 +55,7 @@ public class KafkaListen {
     String groupDate = new SimpleDateFormat("yyyy-MM-dd hh").format(new Date());
 
 
-    @KafkaListener(topics = TOPIC,containerFactory = "ackContainerFactory")
+//    @KafkaListener(topics = TOPIC,containerFactory = "ackContainerFactory")
     public void listen(ConsumerRecord<?, ?> record, Acknowledgment ack) {
 
         try {

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>交通大数据监控系统</title>
+    <script
+            src="https://code.jquery.com/jquery-3.3.1.min.js"
+            integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+            crossorigin="anonymous"></script>
+    <script src="../static/js/echarts.common.min.js"></script>
+</head>
+<body>
+<h2>交通大数据监控系统</h2>
+<div id="main" style="width: 600px;height:400px;"></div>
+<script type="text/javascript">
+    $(document).ready(function(){
+        // 基于准备好的dom，初始化echarts实例
+        var myChart = echarts.init(document.getElementById('main'));
+        serData = []
+        // 指定图表的配置项和数据
+        option = {
+            title: {
+                text: '交通大数据监控系统'
+            },
+            tooltip: {
+                trigger: 'axis',
+                formatter: function (params) {
+                    params = params[0];
+                    var date = new Date(params.name);
+                    return params.value[1];
+                },
+                axisPointer: {
+                    animation: false
+                }
+            },
+            xAxis: {
+                type: 'time',
+            },
+            yAxis: {
+                type: 'value',
+            },
+            series: [{
+                name: '模拟数据',
+                type: 'line',
+                showSymbol: false,
+                hoverAnimation: false,
+                //stack: '总量',
+                data: serData
+            }]
+        };
+
+        setInterval(function () {
+            $.post("getJsonData", function(re) {
+                var reJson = JSON.parse(re);
+                serData.push({name:reJson.time,value:[reJson.time,reJson.count]});
+            });
+
+            myChart.setOption({
+                series: [{
+                    name: '模拟数据',
+                    type: 'line',
+                    showSymbol: false,
+                    hoverAnimation: false,
+                    //stack: '总量',
+                    data: serData
+                }]
+            });
+
+
+        },3000);
+
+        myChart.setOption(option);
+    });
+</script>
+</body>
+</html>
