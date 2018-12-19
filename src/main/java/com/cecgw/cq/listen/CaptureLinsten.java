@@ -43,7 +43,7 @@ public class CaptureLinsten {
                 String capJson = optional.get().toString();
                 CaptureBo captureBo = JSON.parseObject(capJson,CaptureBo.class);
                 Capture capture = changeCapObj(captureBo);
-                String picName = capture.getPic1_name().substring(0,21);
+                String picName = capture.getPic1_name().substring(capture.getPic1_name().lastIndexOf(':') + 9);
                 capture.setPic1_name(picName);
                 //如果跟配置中的数据匹配就SAVE
                 boolean flag = codes.stream().anyMatch(n->n.equals(capture.getTollgate_code()));
@@ -71,5 +71,9 @@ public class CaptureLinsten {
         return capture;
     }
 
+    public static void main(String[] args) {
+           String str =  "http://localhost:8080/111/2018/12312";
+        System.out.println();
 
+    }
 }
