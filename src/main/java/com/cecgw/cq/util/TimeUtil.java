@@ -101,6 +101,17 @@ public class TimeUtil {
         return dbUseSdf.parse(dateStr);
     }
 
+    /**
+     * 字符串转日期
+     * @param dateStr
+     * @param format
+     * @return
+     */
+    public static Date getDate(Date date,String format) throws ParseException {
+        SimpleDateFormat dbUseSdf = new SimpleDateFormat(format);
+        return dbUseSdf.parse(dbUseSdf.format(date));
+    }
+
 
     public static Optional<String> covertFormat(String time, String parttern){
         SimpleDateFormat sdf = new SimpleDateFormat(parttern);

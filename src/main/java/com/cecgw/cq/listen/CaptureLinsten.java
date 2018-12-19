@@ -16,6 +16,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author denghualin
@@ -29,7 +31,7 @@ public class CaptureLinsten {
     @Autowired
     JedisUtil jedisUtil;
     private org.slf4j.Logger logger = LoggerFactory.getLogger(CaptureLinsten.class);
-    String groupDate = new SimpleDateFormat("yyyy-MM-dd hh").format(new Date());
+    String groupDate = new SimpleDateFormat("yyyy-MM-dd HH").format(new Date());
 
     private static final String TOPIC = "cap277";
 //    @KafkaListener(topics = TOPIC, containerFactory = "ackContainerFactory")
@@ -41,6 +43,8 @@ public class CaptureLinsten {
                 String capJson = optional.get().toString();
                 CaptureBo captureBo = JSON.parseObject(capJson,CaptureBo.class);
                 Capture capture = changeCapObj(captureBo);
+                String picName = capture.getPic1_name().substring(0,21);
+                capture.setPic1_name(picName);
                 //如果跟配置中的数据匹配就SAVE
                 boolean flag = codes.stream().anyMatch(n->n.equals(capture.getTollgate_code()));
                 if (flag){
@@ -58,7 +62,7 @@ public class CaptureLinsten {
 
     private Capture changeCapObj(CaptureBo captureBo){
         Capture capture = new Capture();
-        capture.setFX(captureBo.getLaneDir());
+//        capture.setFX(captureBo.getLaneDir());
         capture.setPass_time(String.valueOf(captureBo.getPassTime()));
         capture.setPic1_name(captureBo.getPic1Name());
         capture.setPlate_color(captureBo.getPlateColor());
@@ -66,4 +70,6 @@ public class CaptureLinsten {
         capture.setV2(captureBo.getPlateCode());
         return capture;
     }
+
+
 }

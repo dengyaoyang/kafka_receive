@@ -26,6 +26,7 @@ import org.springframework.stereotype.Component;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -52,7 +53,7 @@ public class KafkaListen {
     RfidAnalyseRep rfidAnalyseRep;
     @Autowired
     RfidAnalyseDayRep rfidAnalyseDayRep;
-    String groupDate = new SimpleDateFormat("yyyy-MM-dd hh").format(new Date());
+    String groupDate = new SimpleDateFormat("yyyy-MM-dd HH").format(new Date());
 
 
 //    @KafkaListener(topics = TOPIC,containerFactory = "ackContainerFactory")
@@ -68,7 +69,7 @@ public class KafkaListen {
                 RFID_ANALYZE rfidAnalyze = new RFID_ANALYZE();
                 rfidAnalyze.setC1(rfidMsg.getCONTENT1());
                 rfidAnalyze.setC2(rfidMsg.getCONTENT2());
-                rfidAnalyze.setTime(new Date(rfidMsg.getCOLLECT_TIME()));
+                rfidAnalyze.setTime(TimeUtil.getDate(new Date(rfidMsg.getCOLLECT_TIME()),TimeUtil.FULL_CODE));
                 rfidAnalyze.setReaderip(rfidMsg.getREADERIP());
                 rfidAnalyze.setColor(rfidMsg.getPlateColor());
                 rfidAnalyze.setEid(rfidMsg.getEID());
@@ -159,16 +160,20 @@ public class KafkaListen {
 
 
 
-    public static void main(String[] args) {
-    String str = "{\"c1\": \"1111\",\"c2\": \"50010017191235\",\"color\": \"2\",\"eid\": \"504459995\",\"id\": 259689302304645130,\"localization\": \"\",\"nature\": \"\",\"plate\": \"02\",\"readerip\": \"1.1.1.1\",\"time\": \"Tue Nov 13 11:26:10 CST 2018\",\"vehicle\": \"2\"}";
-        LINE_SPEED_CONF lineSpeedConf = JSON.parseObject(str,LINE_SPEED_CONF.class);
-        JedisPool jedisPool = new JedisPool(new GenericObjectPoolConfig(),"39.104.145.10", 6379, 10000, "majun123", 0);
-
-        Jedis jedis = jedisPool.getResource();
-        jedis.lpush("startRfid",str);
+    public static void main(String[] args) throws ParseException {
+//    String str = "{\"c1\": \"1111\",\"c2\": \"50010017191235\",\"color\": \"2\",\"eid\": \"504459995\",\"id\": 259689302304645130,\"localization\": \"\",\"nature\": \"\",\"plate\": \"02\",\"readerip\": \"1.1.1.1\",\"time\": \"Tue Nov 13 11:26:10 CST 2018\",\"vehicle\": \"2\"}";
+//        LINE_SPEED_CONF lineSpeedConf = JSON.parseObject(str,LINE_SPEED_CONF.class);
+//        JedisPool jedisPool = new JedisPool(new GenericObjectPoolConfig(),"39.104.145.10", 6379, 10000, "majun123", 0);
+//
+//        Jedis jedis = jedisPool.getResource();
+//        jedis.lpush("startRfid",str);
 //        List<String> conf = jedis.lrange("speedConf", 0, -1);
 //        List<LINE_SPEED_CONF> lineSpeedConf1 = JSONArray.parseArray(conf.toString(),LINE_SPEED_CONF.class);
 //        System.out.println(lineSpeedConf1.size());
+
+        Date date = new Date(System.currentTimeMillis());
+        Date reDate = TimeUtil.getDate(date,TimeUtil.FULL_CODE);
+        System.out.println(reDate);
     }
 
 

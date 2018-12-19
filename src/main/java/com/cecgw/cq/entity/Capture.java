@@ -28,5 +28,4 @@ public class Capture {
     private String pass_time;
     private String pic1_name;
     private String V2;
-    private String FX;
 }
