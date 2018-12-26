@@ -12,6 +12,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -33,7 +34,7 @@ public class CaptureLinsten {
     String groupDate = new SimpleDateFormat("yyyy-MM-dd HH").format(new Date());
 
     private static final String TOPIC = "cap277";
-//    @KafkaListener(topics = TOPIC, containerFactory = "ackContainerFactory")
+    @KafkaListener(topics = TOPIC, containerFactory = "ackContainerFactory")
     public void capListen(ConsumerRecord<?, ?> record, Acknowledgment ack){
         Optional<?> optional = Optional.ofNullable(record.value());
         List<String> codes = jedisUtil.getList("tollgateCode");
@@ -73,6 +74,7 @@ public class CaptureLinsten {
     public static void main(String[] args) {
            String str =  "http://localhost:8080/111/2018/12312";
         System.out.println();
-
+         BigDecimal decimal = new BigDecimal(2.69797010099159E17);
+        System.out.println(decimal.longValue());
     }
 }

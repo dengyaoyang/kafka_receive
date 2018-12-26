@@ -56,9 +56,8 @@ public class KafkaListen {
     String groupDate = new SimpleDateFormat("yyyy-MM-dd HH").format(new Date());
 
 
-//    @KafkaListener(topics = TOPIC,containerFactory = "ackContainerFactory")
+    @KafkaListener(topics = TOPIC,containerFactory = "ackContainerFactory")
     public void listen(ConsumerRecord<?, ?> record, Acknowledgment ack) {
-
         try {
             List<String> conf = jedisUtil.getList("speedConf");
             List<String> ipConf = jedisUtil.getList("ipConf");

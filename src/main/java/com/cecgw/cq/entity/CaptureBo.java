@@ -6,12 +6,14 @@ package com.cecgw.cq.entity;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Data
 @NoArgsConstructor
 public class CaptureBo {
     private String cjdid;
     private String driveStatus;
-    private long id;
+    private BigDecimal id;
     private String identifyStatus;
     private boolean inFence;
     private long insertTime;
